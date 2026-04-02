@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Registro de Entregas</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f5f5f3; --bg3: #eeece8;
+    --text: #1a1a18; --text2: #6b6b67; --text3: #9c9c98;
+    --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.22);
+    --success-bg: #eaf3de; --success-text: #3b6d11;
+    --warning-bg: #faeeda; --warning-text: #854f0b;
+    --danger-text: #a32d2d; --danger-border: rgba(163,45,45,0.35);
+    --info-bg: #e6f1fb; --info-text: #185fa5;
+    --radius: 10px; --radius-sm: 7px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1e1e1c; --bg2: #272725; --bg3: #2f2f2c;
+      --text: #f0ede8; --text2: #a0a09a; --text3: #6a6a64;
+      --border: rgba(255,255,255,0.10); --border2: rgba(255,255,255,0.20);
+      --success-bg: #173404; --success-text: #c0dd97;
+      --warning-bg: #412402; --warning-text: #fac775;
+      --danger-text: #f09595; --danger-border: rgba(240,149,149,0.35);
+      --info-bg: #042c53; --info-text: #85b7eb;
+    }
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; padding: 1.5rem 1rem; }
+  .container { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 600; margin-bottom: 1.5rem; }
+  .tabs { display: flex; gap: 4px; border-bottom: 0.5px solid var(--border); margin-bottom: 1.5rem; }
+  .tab { padding: 8px 18px; font-size: 14px; cursor: pointer; border: none; background: none; color: var(--text2); border-bottom: 2px solid transparent; margin-bottom: -1px; font-family: inherit; transition: color 0.15s; }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  @media (max-width: 500px) { .row { grid-template-columns: 1fr; } }
+  label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 8px 11px; font-size: 14px; font-family: inherit;
+    background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius-sm);
+    color: var(--text); outline: none; transition: border-color 0.15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--border2); }
+  textarea { resize: vertical; min-height: 60px; }
+  .btn { padding: 9px 18px; border-radius: var(--radius-sm); font-size: 14px; cursor: pointer; font-family: inherit; font-weight: 500; transition: opacity 0.15s; border: none; }
+  .btn-primary { background: var(--text); color: var(--bg); }
+  .btn-primary:hover { opacity: 0.82; }
+  .btn-sm { padding: 5px 11px; font-size: 12px; border-radius: var(--radius-sm); cursor: pointer; font-family: inherit; transition: background 0.12s; }
+  .btn-ghost { background: transparent; border: 0.5px solid var(--border2); color: var(--text2); }
+  .btn-ghost:hover { background: var(--bg2); }
+  .btn-devolvido { background: transparent; border: 0.5px solid rgba(59,109,17,0.4); color: var(--success-text); }
+  .btn-danger { background: transparent; border: 0.5px solid var(--danger-border); color: var(--danger-text); }
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+  @media (max-width: 400px) { .metrics { grid-template-columns: 1fr 1fr; } }
+  .metric { background: var(--bg2); border-radius: var(--radius-sm); padding: 12px 14px; }
+  .metric-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .metric-value { font-size: 24px; font-weight: 600; color: var(--text); }
+  .search-row { display: flex; gap: 8px; margin-bottom: 1rem; }
+  .search-row input { flex: 1; }
+  .search-row select { width: auto; min-width: 140px; flex-shrink: 0; }
+  .item { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px; }
+  .item-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .item-title { font-size: 14px; font-weight: 500; }
+  .item-qty { font-weight: 400; color: var(--text2); }
+  .item-sub { font-size: 13px; color: var(--text2); margin-top: 3px; }
+  .item-meta { font-size: 12px; color: var(--text3); margin-top: 6px; }
+  .badge { font-size: 11px; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+  .badge-neutro { background: var(--bg2); color: var(--text2); }
+  .badge-pendente { background: var(--warning-bg); color: var(--warning-text); }
+  .badge-devolvido { background: var(--success-bg); color: var(--success-text); }
+  .actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+  .empty { text-align: center; padding: 2.5rem; color: var(--text3); font-size: 14px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); }
+  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); font-size: 13px; padding: 9px 18px; border-radius: var(--radius-sm); opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 200; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+  .field-full { margin-bottom: 12px; }
+  .sig-wrap { margin-bottom: 14px; }
+  .sig-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .sig-canvas-wrap { position: relative; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: #ffffff; overflow: hidden; touch-action: none; }
+  #sig-canvas { display: block; width: 100%; height: 140px; cursor: crosshair; }
+  .sig-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 13px; color: #aaa; pointer-events: none; user-select: none; text-align: center; line-height: 1.5; }
+  .sig-hint.hidden { display: none; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 150; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg); border-radius: var(--radius); padding: 1.25rem 1.5rem; max-width: 480px; width: 100%; }
+  .modal h3 { font-size: 15px; font-weight: 500; margin-bottom: 1rem; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 1rem; justify-content: flex-end; }
+  .status-bar { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text3); margin-bottom: 1.5rem; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); flex-shrink: 0; }
+  .status-dot.online { background: #3b6d11; }
+  .status-dot.offline { background: #a32d2d; }
+  .loading { text-align: center; padding: 2rem; color: var(--text3); font-size: 14px; }
+  .import-drop { border: 1.5px dashed var(--border2); border-radius: var(--radius-sm); padding: 2rem 1rem; text-align: center; cursor: pointer; transition: background 0.15s; color: var(--text2); font-size: 14px; }
+  .import-drop:hover, .import-drop.over { background: var(--bg2); }
+  .import-drop input[type=file] { display: none; }
+  .import-preview { margin-top: 1rem; }
+  .import-preview table { width: 100%; font-size: 12px; border-collapse: collapse; }
+  .import-preview th { text-align: left; padding: 5px 8px; color: var(--text2); border-bottom: 0.5px solid var(--border); font-weight: 500; }
+  .import-preview td { padding: 5px 8px; border-bottom: 0.5px solid var(--border); color: var(--text); }
+  .import-preview tr:last-child td { border-bottom: none; }
+  .info-box { background: var(--info-bg); color: var(--info-text); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; margin-bottom: 1rem; line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📦 Registro de Entregas</h1>
+
+  <div class="status-bar">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-txt">Conectando...</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('registrar', this)">Registrar entrega</button>
+    <button class="tab" onclick="switchTab('historico', this)">Histórico</button>
+    <button class="tab" onclick="switchTab('importar', this)">Importar</button>
+  </div>
+
+  <!-- ABA REGISTRAR -->
+  <div id="tab-registrar" class="tab-panel active">
+    <div class="card">
+      <div class="row">
+        <div><label>Produto / Item *</label><input type="text" id="produto" placeholder="Ex: Cabo HDMI" /></div>
+        <div><label>Quantidade</label><input type="text" id="quantidade" placeholder="Ex: 1 unidade" /></div>
+      </div>
+      <div class="row">
+        <div><label>Destinatário *</label><input type="text" id="destinatario" placeholder="Ex: Maria" /></div>
+        <div><label>Setor</label><input type="text" id="setor" placeholder="Ex: Coordenação" /></div>
+      </div>
+      <div class="row">
+        <div><label>Data da entrega</label><input type="date" id="data" /></div>
+        <div><label>Tipo</label>
+          <select id="tipo"><option value="definitivo">Definitivo</option><option value="emprestimo">Empréstimo</option></select>
+        </div>
+      </div>
+      <div class="field-full"><label>Observação (opcional)</label><textarea id="obs" placeholder="Detalhes adicionais..."></textarea></div>
+      <div class="sig-wrap">
+        <div class="sig-label-row">
+          <label style="margin:0">Assinatura do recebedor</label>
+          <button class="btn-sm btn-ghost" onclick="limparAssinatura()">Limpar</button>
+        </div>
+        <div class="sig-canvas-wrap">
+          <canvas id="sig-canvas"></canvas>
+          <div class="sig-hint" id="sig-hint">Assine aqui com o dedo ou mouse</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="registrar()">Registrar entrega</button>
+    </div>
+  </div>
+
+  <!-- ABA HISTÓRICO -->
+  <div id="tab-historico" class="tab-panel">
+    <div class="metrics" id="metrics"></div>
+    <div class="search-row">
+      <input type="text" id="busca" placeholder="Buscar produto, pessoa ou setor..." oninput="filtrarHistorico()" />
+      <select id="filtro-tipo" onchange="filtrarHistorico()">
+        <option value="">Todos</option>
+        <option value="definitivo">Definitivo</option>
+        <option value="emprestimo">Empréstimo</option>
+        <option value="pendente">Pendente devolução</option>
+      </select>
+    </div>
+    <div id="lista"><div class="loading">Carregando...</div></div>
+  </div>
+
+  <!-- ABA IMPORTAR -->
+  <div id="tab-importar" class="tab-panel">
+    <div class="card">
+      <div class="info-box">
+        Aceita arquivos <strong>.json</strong> (backup completo com assinaturas) e <strong>.csv</strong> (exportações antigas).<br>
+        Registros duplicados são ignorados automaticamente.
+      </div>
+      <div class="import-drop" id="drop-zone" onclick="document.getElementById('file-input').click()"
+        ondragover="event.preventDefault();this.classList.add('over')"
+        ondragleave="this.classList.remove('over')"
+        ondrop="handleDrop(event)">
+        <input type="file" id="file-input" accept=".json,.csv" onchange="handleFile(this.files[0])" />
+        <div style="font-size:28px;margin-bottom:8px">📂</div>
+        <div>Clique para selecionar o arquivo</div>
+        <div style="font-size:12px;margin-top:4px;color:var(--text3)">.json ou .csv · arraste e solte aqui</div>
+      </div>
+      <div class="import-preview" id="import-preview" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;margin-top:1rem">
+          <span id="import-count" style="font-size:13px;color:var(--text2)"></span>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sm btn-ghost" onclick="cancelarImport()">Cancelar</button>
+            <button class="btn-sm btn-primary" style="background:var(--text);color:var(--bg);border:none" onclick="confirmarImport()">Confirmar importação</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th>Produto</th><th>Destinatário</th><th>Setor</th><th>Data</th><th>Tipo</th><th>Assinatura</th></tr></thead>
+            <tbody id="import-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ASSINATURA -->
+<div class="modal-overlay" id="modal-sig">
+  <div class="modal">
+    <h3>Assinatura — <span id="modal-nome"></span></h3>
+    <img id="modal-img" src="" alt="assinatura" style="max-width:100%;border-radius:var(--radius-sm);border:0.5px solid var(--border);background:#fff;" />
+    <div class="modal-actions"><button class="btn-sm btn-ghost" onclick="fecharModal()">Fechar</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA02ZgDOEYCn8NkhlA2RD7E2K1oIJHGQ_w",
+  authDomain: "registro-entregas-4f76c.firebaseapp.com",
+  projectId: "registro-entregas-4f76c",
+  storageBucket: "registro-entregas-4f76c.firebasestorage.app",
+  messagingSenderId: "1028189378227",
+  appId: "1:1028189378227:web:14199d6471e5b004d0c2c6"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const col = collection(db, 'entregas');
+
+// STATUS
+function setStatus(online) {
+  document.getElementById('status-dot').className = 'status-dot ' + (online ? 'online' : 'offline');
+  document.getElementById('status-txt').textContent = online ? 'Conectado — dados em tempo real' : 'Sem conexão';
+}
+window.addEventListener('online', () => setStatus(true));
+window.addEventListener('offline', () => setStatus(false));
+setStatus(navigator.onLine);
+
+// CACHE local para filtrar sem rebuscar
+let allDocs = [];
+
+// LISTENER em tempo real
+const q = query(col, orderBy('criadoEm', 'desc'));
+onSnapshot(q, snap => {
+  allDocs = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+  setStatus(true);
+  renderHistorico();
+}, err => { console.error(err); setStatus(false); });
+
+// TOAST
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+window.showToast = showToast;
+
+// TABS
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  el.classList.add('active');
+  if (tab === 'historico') renderHistorico();
+}
+window.switchTab = switchTab;
+
+// CANVAS ASSINATURA
+const canvas = document.getElementById('sig-canvas');
+const ctx = canvas.getContext('2d');
+let drawing = false, hasSig = false;
+function resizeCanvas() {
+  const wrap = canvas.parentElement, ratio = window.devicePixelRatio || 1;
+  const w = wrap.clientWidth, h = 140;
+  const imgData = hasSig ? canvas.toDataURL() : null;
+  canvas.width = w * ratio; canvas.height = h * ratio;
+  canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  ctx.scale(ratio, ratio);
+  ctx.strokeStyle = '#1a1a18'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if (imgData) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, w, h); img.src = imgData; }
+}
+function getPos(e) { const r = canvas.getBoundingClientRect(); const src = e.touches ? e.touches[0] : e; return { x: src.clientX - r.left, y: src.clientY - r.top }; }
+canvas.addEventListener('mousedown', e => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+canvas.addEventListener('mousemove', e => { if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); markSig(); });
+canvas.addEventListener('mouseup', () => drawing = false);
+canvas.addEventListener('mouseleave', () => drawing = false);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }, { passive: false });
+canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!drawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); markSig(); }, { passive: false });
+canvas.addEventListener('touchend', () => drawing = false);
+function markSig() { hasSig = true; document.getElementById('sig-hint').classList.add('hidden'); }
+function limparAssinatura() { const r = window.devicePixelRatio||1; ctx.clearRect(0,0,canvas.width/r,canvas.height/r); hasSig = false; document.getElementById('sig-hint').classList.remove('hidden'); }
+function getAssinatura() { return hasSig ? canvas.toDataURL('image/png') : null; }
+window.limparAssinatura = limparAssinatura;
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+function today() { return new Date().toISOString().slice(0,10); }
+document.getElementById('data').value = today();
+
+// REGISTRAR
+async function registrar() {
+  const produto = document.getElementById('produto').value.trim();
+  const destinatario = document.getElementById('destinatario').value.trim();
+  if (!produto) { showToast('Informe o produto'); return; }
+  if (!destinatario) { showToast('Informe o destinatário'); return; }
+  const btn = document.querySelector('.btn-primary');
+  btn.textContent = 'Salvando...'; btn.disabled = true;
+  try {
+    await addDoc(col, {
+      produto,
+      quantidade: document.getElementById('quantidade').value.trim() || '',
+      destinatario,
+      setor: document.getElementById('setor').value.trim() || '',
+      data: document.getElementById('data').value,
+      tipo: document.getElementById('tipo').value,
+      obs: document.getElementById('obs').value.trim(),
+      devolvido: false,
+      dataDevolvido: null,
+      assinatura: getAssinatura(),
+      criadoEm: Date.now()
+    });
+    ['produto','quantidade','destinatario','setor','obs'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('data').value = today();
+    document.getElementById('tipo').value = 'definitivo';
+    limparAssinatura();
+    showToast('Entrega registrada com sucesso!');
+  } catch(e) { showToast('Erro ao salvar. Verifique a conexão.'); console.error(e); }
+  btn.textContent = 'Registrar entrega'; btn.disabled = false;
+}
+window.registrar = registrar;
+
+function fmt(d) { if (!d) return '—'; const [y,m,day] = d.split('-'); return `${day}/${m}/${y}`; }
+
+// MARCAR DEVOLVIDO
+async function marcarDevolvido(id) {
+  try {
+    await updateDoc(doc(db, 'entregas', id), { devolvido: true, dataDevolvido: today() });
+    showToast('Marcado como devolvido');
+  } catch(e) { showToast('Erro ao atualizar'); }
+}
+window.marcarDevolvido = marcarDevolvido;
+
+// EXCLUIR
+async function excluir(id) {
+  if (!confirm('Remover este registro?')) return;
+  try {
+    await deleteDoc(doc(db, 'entregas', id));
+    showToast('Registro removido');
+  } catch(e) { showToast('Erro ao remover'); }
+}
+window.excluir = excluir;
+
+// VER ASSINATURA
+function verAssinatura(id) {
+  const item = allDocs.find(e => e._id === id);
+  if (!item || !item.assinatura) return;
+  document.getElementById('modal-nome').textContent = item.destinatario;
+  document.getElementById('modal-img').src = item.assinatura;
+  document.getElementById('modal-sig').classList.add('open');
+}
+window.verAssinatura = verAssinatura;
+function fecharModal() { document.getElementById('modal-sig').classList.remove('open'); }
+window.fecharModal = fecharModal;
+document.getElementById('modal-sig').addEventListener('click', function(e) { if (e.target === this) fecharModal(); });
+
+// EXPORTAR BACKUP JSON
+function exportarBackup() {
+  if (!allDocs.length) { showToast('Nenhum registro para exportar'); return; }
+  const backup = { versao: 3, exportadoEm: new Date().toISOString(), total: allDocs.length, registros: allDocs };
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' }));
+  a.download = `entregas_backup_${today()}.json`; a.click();
+  showToast('Backup exportado!');
+}
+window.exportarBackup = exportarBackup;
+
+// HISTÓRICO
+function filtrarHistorico() { renderHistorico(); }
+window.filtrarHistorico = filtrarHistorico;
+
+function renderHistorico() {
+  const busca = (document.getElementById('busca')?.value || '').toLowerCase();
+  const filtro = document.getElementById('filtro-tipo')?.value || '';
+  const total = allDocs.length;
+  const emprestimos = allDocs.filter(e => e.tipo === 'emprestimo').length;
+  const pendentes = allDocs.filter(e => e.tipo === 'emprestimo' && !e.devolvido).length;
+  document.getElementById('metrics').innerHTML = `
+    <div class="metric"><div class="metric-label">Total de entregas</div><div class="metric-value">${total}</div></div>
+    <div class="metric"><div class="metric-label">Empréstimos</div><div class="metric-value">${emprestimos}</div></div>
+    <div class="metric"><div class="metric-label">Pendentes devolução</div><div class="metric-value">${pendentes}</div></div>
+  `;
+  const filtered = allDocs.filter(e => {
+    const texto = [e.produto, e.destinatario, e.setor, e.obs].join(' ').toLowerCase();
+    const matchBusca = !busca || texto.includes(busca);
+    const matchFiltro = !filtro || (filtro === 'pendente' ? (e.tipo === 'emprestimo' && !e.devolvido) : e.tipo === filtro);
+    return matchBusca && matchFiltro;
+  });
+  const lista = document.getElementById('lista');
+  if (!filtered.length) { lista.innerHTML = '<div class="empty">Nenhum registro encontrado</div>'; return; }
+  lista.innerHTML = `
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+      <button class="btn-sm btn-ghost" onclick="exportarBackup()">Exportar backup</button>
+    </div>
+    ${filtered.map(e => {
+      const badgeClass = e.tipo === 'definitivo' ? 'badge-neutro' : e.devolvido ? 'badge-devolvido' : 'badge-pendente';
+      const badgeLabel = e.tipo === 'definitivo' ? 'Definitivo' : e.devolvido ? 'Devolvido' : 'Empréstimo';
+      const meta = ['Entregue em ' + fmt(e.data), e.devolvido ? 'Devolvido em ' + fmt(e.dataDevolvido) : null, e.obs || null].filter(Boolean).join(' · ');
+      return `
+        <div class="item">
+          <div class="item-header">
+            <div>
+              <div class="item-title">${e.produto}${e.quantidade ? ' <span class="item-qty">('+e.quantidade+')</span>' : ''}</div>
+              <div class="item-sub">${e.destinatario}${e.setor ? ' · ' + e.setor : ''}</div>
+            </div>
+            <span class="badge ${badgeClass}">${badgeLabel}</span>
+          </div>
+          <div class="item-meta">${meta}</div>
+          <div class="actions">
+            ${e.assinatura ? `<button class="btn-sm btn-ghost" onclick="verAssinatura('${e._id}')">Ver assinatura</button>` : `<span style="font-size:12px;color:var(--text3)">Sem assinatura</span>`}
+            ${e.tipo === 'emprestimo' && !e.devolvido ? `<button class="btn-sm btn-devolvido" onclick="marcarDevolvido('${e._id}')">Marcar devolvido</button>` : ''}
+            <button class="btn-sm btn-danger" onclick="excluir('${e._id}')">Remover</button>
+          </div>
+        </div>`;
+    }).join('')}`;
+}
+
+// IMPORTAR
+let pendingImport = [];
+function handleDrop(e) { e.preventDefault(); document.getElementById('drop-zone').classList.remove('over'); handleFile(e.dataTransfer.files[0]); }
+window.handleDrop = handleDrop;
+function handleFile(file) {
+  if (!file) return;
+  const isJson = file.name.toLowerCase().endsWith('.json');
+  const reader = new FileReader();
+  reader.onload = e => { const text = e.target.result.replace(/^\uFEFF/, ''); isJson ? parseJSON(text) : parseCSV(text); };
+  reader.readAsText(file, 'UTF-8');
+}
+window.handleFile = handleFile;
+
+function parseDateBR(s) {
+  if (!s || s === '—') return null;
+  if (s.includes('/')) { const [d,m,y] = s.split('/'); return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`; }
+  return s;
+}
+
+function parseJSON(text) {
+  try {
+    const parsed = JSON.parse(text);
+    const registros = Array.isArray(parsed) ? parsed : (parsed.registros || []);
+    if (!registros.length) { showToast('JSON vazio ou inválido'); return; }
+    processarImport(registros);
+  } catch { showToast('Erro ao ler o arquivo JSON'); }
+}
+
+function parseCSVLine(line) {
+  const result = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { if (inQ && line[i+1] === '"') { cur += '"'; i++; } else inQ = !inQ; }
+    else if (c === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+    else cur += c;
+  }
+  result.push(cur.trim()); return result;
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) { showToast('CSV vazio ou inválido'); return; }
+  const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
+  const col = name => headers.findIndex(h => h.includes(name));
+  const iP = col('produto'), iQ = col('quantidade'), iD = col('destinat'),
+        iS = col('setor'), iDt = headers.findIndex(h => h === 'data'),
+        iTp = col('tipo'), iDev = col('devolvido'), iDtDev = col('devolução'), iObs = col('observa');
+  const registros = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseCSVLine(lines[i]);
+    const produto = iP >= 0 ? cols[iP] : ''; if (!produto) continue;
+    const devolvidoRaw = iDev >= 0 ? cols[iDev] : 'Não';
+    const devolvido = devolvidoRaw.toLowerCase() === 'sim';
+    registros.push({
+      produto, quantidade: iQ >= 0 ? cols[iQ] : '',
+      destinatario: iD >= 0 ? cols[iD] : '', setor: iS >= 0 ? cols[iS] : '',
+      data: parseDateBR(iDt >= 0 ? cols[iDt] : '') || today(),
+      tipo: (iTp >= 0 ? cols[iTp] : '').toLowerCase().includes('empr') ? 'emprestimo' : 'definitivo',
+      obs: iObs >= 0 ? cols[iObs] : '', devolvido,
+      dataDevolvido: devolvido ? parseDateBR(iDtDev >= 0 ? cols[iDtDev] : '') : null,
+      assinatura: null, criadoEm: Date.now() + i
+    });
+  }
+  processarImport(registros);
+}
+
+function processarImport(registros) {
+  const existingKeys = new Set(allDocs.map(e => `${e.produto}|${e.destinatario}|${e.data}`));
+  pendingImport = registros.filter(e => {
+    const key = `${e.produto}|${e.destinatario}|${e.data}`;
+    if (existingKeys.has(key)) return false;
+    existingKeys.add(key); return true;
+  });
+  if (!pendingImport.length) { showToast('Nenhum registro novo encontrado'); return; }
+  document.getElementById('import-count').textContent = `${pendingImport.length} registro(s) novo(s) encontrado(s)`;
+  document.getElementById('import-tbody').innerHTML = pendingImport.slice(0,20).map(e => `
+    <tr>
+      <td>${e.produto}${e.quantidade ? ' ('+e.quantidade+')' : ''}</td>
+      <td>${e.destinatario}</td><td>${e.setor||'—'}</td>
+      <td>${fmt(e.data)}</td>
+      <td>${e.tipo === 'emprestimo' ? 'Empréstimo' : 'Definitivo'}</td>
+      <td>${e.assinatura ? '✓' : '—'}</td>
+    </tr>`).join('') + (pendingImport.length > 20 ? `<tr><td colspan="6" style="color:var(--text3);text-align:center">... e mais ${pendingImport.length-20} registros</td></tr>` : '');
+  document.getElementById('import-preview').style.display = 'block';
+}
+
+async function confirmarImport() {
+  if (!pendingImport.length) return;
+  const btn = document.querySelector('#import-preview .btn-primary');
+  btn.textContent = 'Importando...'; btn.disabled = true;
+  try {
+    for (const e of pendingImport) {
+      const { _id, ...data } = e;
+      if (!data.criadoEm) data.criadoEm = Date.now();
+      await addDoc(col, data);
+    }
+    showToast(`${pendingImport.length} registro(s) importado(s)!`);
+    cancelarImport();
+    switchTab('historico', document.querySelectorAll('.tab')[1]);
+  } catch(err) { showToast('Erro durante importação'); console.error(err); }
+  btn.textContent = 'Confirmar importação'; btn.disabled = false;
+}
+window.confirmarImport = confirmarImport;
+
+function cancelarImport() {
+  pendingImport = [];
+  document.getElementById('import-preview').style.display = 'none';
+  document.getElementById('file-input').value = '';
+}
+window.cancelarImport = cancelarImport;
+
+</script>
+</body>
+</html>
