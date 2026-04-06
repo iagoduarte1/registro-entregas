@@ -141,6 +141,9 @@
       <div class="field-full"><label>Email</label><input type="email" id="login-email" placeholder="seu@email.com" /></div>
       <div class="field-full"><label>Senha</label><input type="password" id="login-senha" placeholder="••••••••" /></div>
       <button class="btn btn-primary btn-block" onclick="fazerLogin()">Entrar</button>
+      <div style="text-align:center;margin-top:12px;">
+        <button onclick="esqueceuSenha()" style="background:none;border:none;font-size:13px;color:var(--text2);cursor:pointer;font-family:inherit;text-decoration:underline;">Esqueci minha senha</button>
+      </div>
     </div>
 
     <!-- CADASTRO -->
@@ -261,7 +264,7 @@
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, query, where, orderBy, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyA02ZgDOEYCn8NkhlA2RD7E2K1oIJHGQ_w",
@@ -438,7 +441,17 @@ async function fazerCadastro() {
 }
 window.fazerCadastro = fazerCadastro;
 
-async function fazerLogout() {
+async function esqueceuSenha() {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { showToast('Digite seu email primeiro'); return; }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    showToast('Email de redefinição enviado!');
+  } catch(e) {
+    showToast('Email não encontrado');
+  }
+}
+window.esqueceuSenha = esqueceuSenha;
   await signOut(auth);
   showToast('Sessão encerrada');
 }
@@ -651,9 +664,11 @@ function renderUsuarios(usuarios) {
           <div class="user-name">${u.nome} <span class="badge ${u.role === 'admin' || u.role === 'superadmin' ? 'badge-pendente-aprov' : 'badge-neutro'}">${u.role === 'admin' ? 'Admin' : u.role === 'superadmin' ? 'Super Admin' : 'Usuário'}</span></div>
           <div class="user-detail">${u.email} · ${u.empresa} · ${u.setor}</div>
         </div>
-        <div style="display:flex;gap:6px;flex-shrink:0">
+        <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
           ${u.role !== 'superadmin' && u.uid !== currentProfile?.uid ? `
             ${u.role !== 'admin' ? `<button class="btn-sm btn-ghost" onclick="tornarAdmin('${u._docId}', '${u.nome}')">Tornar admin</button>` : `<button class="btn-sm btn-ghost" onclick="removerAdmin('${u._docId}', '${u.nome}')">Remover admin</button>`}
+            <button class="btn-sm btn-danger" onclick="desativarUsuario('${u._docId}', '${u.nome}')">Desativar</button>
+            <button class="btn-sm btn-danger" onclick="excluirUsuario('${u._docId}', '${u.nome}', '${u.email}')">Excluir</button>
           ` : ''}
         </div>
       </div>`).join('');
@@ -672,6 +687,20 @@ async function recusarUsuario(docId, email) {
   catch(e) { showToast('Erro ao remover'); }
 }
 window.recusarUsuario = recusarUsuario;
+
+async function desativarUsuario(docId, nome) {
+  if (!confirm('Desativar ' + nome + '? Ele não conseguirá mais acessar o sistema.')) return;
+  try { await updateDoc(doc(db, 'usuarios', docId), { aprovado: false }); showToast(nome + ' desativado'); }
+  catch(e) { showToast('Erro ao desativar'); }
+}
+window.desativarUsuario = desativarUsuario;
+
+async function excluirUsuario(docId, nome, email) {
+  if (!confirm('Excluir permanentemente o usuário ' + nome + ' (' + email + ')?\nOs registros de entrega dele serão mantidos.')) return;
+  try { await deleteDoc(doc(db, 'usuarios', docId)); showToast('Usuário ' + nome + ' excluído'); }
+  catch(e) { showToast('Erro ao excluir'); }
+}
+window.excluirUsuario = excluirUsuario;
 
 async function tornarAdmin(docId, nome) {
   try { await updateDoc(doc(db, 'usuarios', docId), { role: 'admin' }); showToast(nome + ' agora é admin'); }
