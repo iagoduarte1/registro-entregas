@@ -452,6 +452,8 @@ async function esqueceuSenha() {
   }
 }
 window.esqueceuSenha = esqueceuSenha;
+
+async function fazerLogout() {
   await signOut(auth);
   showToast('Sessão encerrada');
 }
