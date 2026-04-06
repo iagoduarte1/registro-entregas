@@ -343,6 +343,7 @@ function mostrarAuth() {
 function mostrarApp() {
   document.getElementById('auth-wrap').style.display = 'none';
   document.getElementById('app-wrap').classList.add('visible');
+  setTimeout(() => resizeCanvas(), 150);
 
   const p = currentProfile;
   const badge = document.getElementById('role-badge');
