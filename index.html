@@ -1307,7 +1307,10 @@ function renderUsuarios(usuarios){
         <button class="btn-sm btn-danger" onclick="recusarUsuario('${u._docId}','${u.email}')">Recusar</button>
       </div></div>`).join('');
   const aEl=document.getElementById('usuarios-ativos');
-  aEl.innerHTML=!ativos.length?'<div class="empty">Nenhum usuário ativo</div>':
+  const aviso=`<div style="background:var(--warning-bg);color:var(--warning-text);border-radius:var(--radius-sm);padding:10px 14px;font-size:12px;margin-bottom:12px;line-height:1.6">
+    ⚠️ Para remover um usuário permanentemente e liberar o e-mail para novo cadastro, acesse <strong>Firebase Console → Authentication → Users</strong> e exclua a conta de lá também. Aqui você pode apenas desativar o acesso.
+  </div>`;
+  aEl.innerHTML=(!ativos.length?'<div class="empty">Nenhum usuário ativo</div>':aviso+
     ativos.map(u=>`<div class="user-row">
       <div class="user-info">
         <div class="user-name">${u.nome} <span class="badge ${u.role==='admin'||u.role==='superadmin'?'badge-info':'badge-neutro'}">${u.role==='admin'?'Admin':u.role==='superadmin'?'Super Admin':'Usuário'}</span></div>
@@ -1316,9 +1319,8 @@ function renderUsuarios(usuarios){
       <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
         ${u.role!=='superadmin'&&u.uid!==currentProfile?.uid?`
           ${u.role!=='admin'?`<button class="btn-sm btn-ghost" onclick="tornarAdmin('${u._docId}','${u.nome}')">Tornar admin</button>`:`<button class="btn-sm btn-ghost" onclick="removerAdmin('${u._docId}','${u.nome}')">Remover admin</button>`}
-          <button class="btn-sm btn-danger" onclick="desativarUsuario('${u._docId}','${u.nome}')">Desativar</button>
-          <button class="btn-sm btn-danger" onclick="excluirUsuario('${u._docId}','${u.nome}','${u.email}')">Excluir</button>`:''}
-      </div></div>`).join('');
+          <button class="btn-sm btn-danger" onclick="desativarUsuario('${u._docId}','${u.nome}')">Desativar</button>`:''}
+      </div></div>`).join(''));
 }
 
 async function aprovarUsuario(docId,nome){
@@ -1338,12 +1340,7 @@ async function desativarUsuario(docId,nome){
   catch(e){showToast('Erro ao desativar');}
 }
 window.desativarUsuario=desativarUsuario;
-async function excluirUsuario(docId,nome,email){
-  if(!confirm('Excluir permanentemente '+nome+' ('+email+')?'))return;
-  try{await deleteDoc(doc(db,'usuarios',docId));showToast('Usuário '+nome+' excluído');}
-  catch(e){showToast('Erro ao excluir');}
-}
-window.excluirUsuario=excluirUsuario;
+
 async function tornarAdmin(docId,nome){
   try{await updateDoc(doc(db,'usuarios',docId),{role:'admin'});showToast(nome+' agora é admin');}
   catch(e){showToast('Erro');}
