@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>Registro de Entregas</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -27,7 +27,15 @@
       --info-bg: #042c53; --info-text: #85b7eb;
     }
   }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg3); color: var(--text);
+    min-height: 100vh;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
 
   /* AUTH */
   .auth-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
@@ -40,10 +48,15 @@
   .auth-panel { display: none; }
   .auth-panel.active { display: block; }
 
+  /* PASSWORD FIELD */
+  .pass-wrap { position: relative; }
+  .pass-wrap input { padding-right: 40px; }
+  .pass-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text2); font-size: 16px; padding: 4px; }
+
   /* APP */
   .app-wrap { display: none; }
   .app-wrap.visible { display: block; }
-  .topbar { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 0.75rem 1.25rem; display: flex; align-items: center; justify-content: space-between; }
+  .topbar { background: var(--bg); border-bottom: 0.5px solid var(--border); padding: 0.75rem 1.25rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
   .topbar-left { display: flex; align-items: center; gap: 10px; }
   .topbar h1 { font-size: 16px; font-weight: 600; }
   .user-badge { font-size: 11px; padding: 3px 8px; border-radius: 99px; background: var(--bg2); color: var(--text2); }
@@ -96,7 +109,7 @@
   .badge-pendente-aprov { background: var(--info-bg); color: var(--info-text); }
   .actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
   .empty { text-align: center; padding: 2.5rem; color: var(--text3); font-size: 14px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); }
-  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); font-size: 13px; padding: 9px 18px; border-radius: var(--radius-sm); opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 200; white-space: nowrap; }
+  .toast { position: fixed; bottom: calc(1.5rem + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); font-size: 13px; padding: 9px 18px; border-radius: var(--radius-sm); opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 200; white-space: nowrap; }
   .toast.show { opacity: 1; }
   .field-full { margin-bottom: 12px; }
   .sig-wrap { margin-bottom: 14px; }
@@ -111,7 +124,6 @@
   .modal h3 { font-size: 15px; font-weight: 500; margin-bottom: 1rem; }
   .modal-actions { display: flex; gap: 8px; margin-top: 1rem; justify-content: flex-end; }
   .info-box { background: var(--info-bg); color: var(--info-text); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; margin-bottom: 1rem; line-height: 1.6; }
-  .warning-box { background: var(--warning-bg); color: var(--warning-text); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; margin-bottom: 1rem; line-height: 1.6; }
   .status-bar { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text3); margin-bottom: 1.25rem; }
   .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); }
   .status-dot.online { background: #3b6d11; }
@@ -122,6 +134,17 @@
   .user-name { font-size: 14px; font-weight: 500; }
   .user-detail { font-size: 12px; color: var(--text2); margin-top: 2px; }
   .pending-warning { background: var(--warning-bg); color: var(--warning-text); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; margin-bottom: 1rem; }
+
+  /* DESTINATÁRIO AUTOCOMPLETE */
+  .dest-wrap { position: relative; }
+  .dest-dropdown { display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--radius-sm); z-index: 50; max-height: 200px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .dest-dropdown.open { display: block; }
+  .dest-item { padding: 9px 12px; font-size: 14px; cursor: pointer; border-bottom: 0.5px solid var(--border); }
+  .dest-item:last-child { border-bottom: none; }
+  .dest-item:hover { background: var(--bg2); }
+  .dest-item-name { font-weight: 500; }
+  .dest-item-setor { font-size: 12px; color: var(--text2); }
+  .dest-novo { color: var(--info-text); font-style: italic; }
 </style>
 </head>
 <body>
@@ -139,7 +162,13 @@
     <!-- LOGIN -->
     <div class="auth-panel active" id="auth-login">
       <div class="field-full"><label>Email</label><input type="email" id="login-email" placeholder="seu@email.com" /></div>
-      <div class="field-full"><label>Senha</label><input type="password" id="login-senha" placeholder="••••••••" /></div>
+      <div class="field-full">
+        <label>Senha</label>
+        <div class="pass-wrap">
+          <input type="password" id="login-senha" placeholder="••••••••" />
+          <button class="pass-toggle" onclick="toggleSenha('login-senha', this)" type="button">👁</button>
+        </div>
+      </div>
       <button class="btn btn-primary btn-block" onclick="fazerLogin()">Entrar</button>
       <div style="text-align:center;margin-top:12px;">
         <button onclick="esqueceuSenha()" style="background:none;border:none;font-size:13px;color:var(--text2);cursor:pointer;font-family:inherit;text-decoration:underline;">Esqueci minha senha</button>
@@ -148,10 +177,23 @@
 
     <!-- CADASTRO -->
     <div class="auth-panel" id="auth-cadastro">
-      <div class="info-box">Após o cadastro, aguarde a aprovação do administrador da sua empresa para acessar o sistema.</div>
+      <div class="info-box">Após o cadastro, aguarde a aprovação do administrador para acessar o sistema.</div>
       <div class="field-full"><label>Nome completo</label><input type="text" id="cad-nome" placeholder="Seu nome" /></div>
       <div class="field-full"><label>Email</label><input type="email" id="cad-email" placeholder="seu@email.com" /></div>
-      <div class="field-full"><label>Senha</label><input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" /></div>
+      <div class="field-full">
+        <label>Senha</label>
+        <div class="pass-wrap">
+          <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" />
+          <button class="pass-toggle" onclick="toggleSenha('cad-senha', this)" type="button">👁</button>
+        </div>
+      </div>
+      <div class="field-full">
+        <label>Confirmar senha</label>
+        <div class="pass-wrap">
+          <input type="password" id="cad-senha2" placeholder="Digite a senha novamente" />
+          <button class="pass-toggle" onclick="toggleSenha('cad-senha2', this)" type="button">👁</button>
+        </div>
+      </div>
       <div class="field-full"><label>Empresa</label><input type="text" id="cad-empresa" placeholder="Nome da sua empresa" /></div>
       <div class="field-full"><label>Setor</label><input type="text" id="cad-setor" placeholder="Ex: Coordenação, TI, Financeiro" /></div>
       <button class="btn btn-primary btn-block" onclick="fazerCadastro()">Criar conta</button>
@@ -180,13 +222,14 @@
     </div>
 
     <div id="pending-warning" class="pending-warning" style="display:none">
-      ⏳ Sua conta está aguardando aprovação do administrador. Você será notificado quando o acesso for liberado.
+      ⏳ Sua conta está aguardando aprovação do administrador.
     </div>
 
     <div class="tabs" id="main-tabs">
-      <button class="tab active" onclick="switchTab('registrar', this)">Registrar</button>
-      <button class="tab" onclick="switchTab('historico', this)">Histórico</button>
+      <button class="tab active" id="tab-btn-registrar" onclick="switchTab('registrar', this)">Registrar</button>
+      <button class="tab" id="tab-btn-historico" onclick="switchTab('historico', this)">Histórico</button>
       <button class="tab" id="tab-admin-btn" style="display:none" onclick="switchTab('admin', this)">Administração</button>
+      <button class="tab" id="tab-colab-btn" style="display:none" onclick="switchTab('colaboradores', this)">Colaboradores</button>
     </div>
 
     <!-- ABA REGISTRAR -->
@@ -196,9 +239,16 @@
           <div><label>Produto / Item *</label><input type="text" id="produto" placeholder="Ex: Cabo HDMI" /></div>
           <div><label>Quantidade</label><input type="text" id="quantidade" placeholder="Ex: 1 unidade" /></div>
         </div>
-        <div class="row">
-          <div><label>Destinatário *</label><input type="text" id="destinatario" placeholder="Ex: Maria" /></div>
-          <div><label>Setor</label><input type="text" id="setor-entrega" placeholder="Ex: Coordenação" /></div>
+        <div class="field-full">
+          <label>Destinatário *</label>
+          <div class="dest-wrap">
+            <input type="text" id="destinatario" placeholder="Buscar colaborador ou digitar nome..." autocomplete="off" oninput="buscarColaborador()" onfocus="buscarColaborador()" />
+            <div class="dest-dropdown" id="dest-dropdown"></div>
+          </div>
+        </div>
+        <div class="field-full">
+          <label>Setor do destinatário</label>
+          <input type="text" id="setor-entrega" placeholder="Preenchido automaticamente ou digite" />
         </div>
         <div class="row">
           <div><label>Data da entrega</label><input type="date" id="data" /></div>
@@ -247,6 +297,26 @@
         <div id="usuarios-ativos"><div class="empty">Carregando...</div></div>
       </div>
     </div>
+
+    <!-- ABA COLABORADORES -->
+    <div id="tab-colaboradores" class="tab-panel">
+      <div class="card">
+        <div class="section-title">Cadastrar colaborador</div>
+        <div class="row">
+          <div><label>Nome *</label><input type="text" id="colab-nome" placeholder="Nome completo" /></div>
+          <div><label>Setor *</label><input type="text" id="colab-setor" placeholder="Ex: Coordenação" /></div>
+        </div>
+        <div class="field-full"><label>Cargo (opcional)</label><input type="text" id="colab-cargo" placeholder="Ex: Professor, Auxiliar" /></div>
+        <button class="btn btn-primary" onclick="cadastrarColaborador()">Cadastrar</button>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="section-title" style="margin:0">Colaboradores cadastrados</div>
+          <input type="text" id="busca-colab" placeholder="Buscar..." style="width:160px;font-size:13px;padding:5px 10px" oninput="renderColaboradores()" />
+        </div>
+        <div id="lista-colaboradores"><div class="empty">Nenhum colaborador cadastrado</div></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -278,24 +348,24 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-
-// SEU EMAIL = SUPER ADMIN
 const SUPER_ADMIN_EMAIL = 'iagoduarte.id@gmail.com';
 
 let currentUser = null;
 let currentProfile = null;
 let allDocs = [];
+let allColaboradores = [];
 let unsubEntregas = null;
 let unsubUsuarios = null;
+let unsubColaboradores = null;
 
 // STATUS
-function setStatus(online) {
-  document.getElementById('status-dot').className = 'status-dot ' + (online ? 'online' : 'offline');
-  document.getElementById('status-txt').textContent = online ? 'Conectado' : 'Sem conexão';
+function setStatus(online, msg) {
+  document.getElementById('status-dot').className = 'status-dot ' + (online ? 'online' : '');
+  document.getElementById('status-txt').textContent = msg || (online ? 'Conectado' : 'Sem conexão');
 }
 window.addEventListener('online', () => setStatus(true));
 window.addEventListener('offline', () => setStatus(false));
-setStatus(navigator.onLine);
+setStatus(false, 'Conectando...');
 
 // TOAST
 function showToast(msg) {
@@ -306,14 +376,21 @@ function showToast(msg) {
 }
 window.showToast = showToast;
 
+// TOGGLE SENHA
+function toggleSenha(id, btn) {
+  const input = document.getElementById(id);
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+  else { input.type = 'password'; btn.textContent = '👁'; }
+}
+window.toggleSenha = toggleSenha;
+
 // AUTH STATE
 onAuthStateChanged(auth, async user => {
   if (user) {
     currentUser = user;
     await carregarPerfil(user);
   } else {
-    currentUser = null;
-    currentProfile = null;
+    currentUser = null; currentProfile = null;
     mostrarAuth();
   }
 });
@@ -322,17 +399,14 @@ async function carregarPerfil(user) {
   const isSuperAdmin = user.email === SUPER_ADMIN_EMAIL;
   if (isSuperAdmin) {
     currentProfile = { uid: user.uid, email: user.email, nome: 'Super Admin', role: 'superadmin', empresa: 'Todas', setor: '', aprovado: true };
-    mostrarApp();
-    return;
+    mostrarApp(); return;
   }
   const snap = await getDocs(query(collection(db, 'usuarios'), where('uid', '==', user.uid)));
   if (!snap.empty) {
     currentProfile = { uid: user.uid, ...snap.docs[0].data() };
     mostrarApp();
   } else {
-    mostrarAuth();
-    showToast('Perfil não encontrado. Refaça o cadastro.');
-    await signOut(auth);
+    mostrarAuth(); showToast('Perfil não encontrado. Refaça o cadastro.'); await signOut(auth);
   }
 }
 
@@ -341,81 +415,104 @@ function mostrarAuth() {
   document.getElementById('app-wrap').classList.remove('visible');
   if (unsubEntregas) { unsubEntregas(); unsubEntregas = null; }
   if (unsubUsuarios) { unsubUsuarios(); unsubUsuarios = null; }
+  if (unsubColaboradores) { unsubColaboradores(); unsubColaboradores = null; }
 }
 
 function mostrarApp() {
   document.getElementById('auth-wrap').style.display = 'none';
   document.getElementById('app-wrap').classList.add('visible');
   setTimeout(() => resizeCanvas(), 150);
-
   const p = currentProfile;
   const badge = document.getElementById('role-badge');
   const empresaTxt = document.getElementById('empresa-txt');
+
+  if (!p.aprovado && p.role !== 'superadmin') {
+    badge.textContent = 'Aguardando aprovação'; badge.className = 'user-badge';
+    document.getElementById('pending-warning').style.display = 'block';
+    document.getElementById('tab-registrar').innerHTML = '<div class="empty" style="margin-top:1rem">Acesso bloqueado até aprovação do administrador.</div>';
+    document.getElementById('tab-btn-historico').style.display = 'none';
+    empresaTxt.textContent = '· ' + p.empresa;
+    setStatus(true, 'Aguardando aprovação');
+    return;
+  }
 
   if (p.role === 'superadmin') {
     badge.textContent = 'Super Admin'; badge.className = 'user-badge superadmin';
     empresaTxt.textContent = '';
     document.getElementById('tab-admin-btn').style.display = 'block';
+    document.getElementById('tab-colab-btn').style.display = 'block';
     iniciarListenerSuperAdmin();
-  } else if (!p.aprovado) {
-    badge.textContent = 'Aguardando aprovação'; badge.className = 'user-badge';
-    document.getElementById('pending-warning').style.display = 'block';
-    document.getElementById('tab-registrar').innerHTML = '';
-    empresaTxt.textContent = '· ' + p.empresa;
+    iniciarListenerColaboradores(null);
   } else if (p.role === 'admin') {
     badge.textContent = 'Admin'; badge.className = 'user-badge admin';
     empresaTxt.textContent = '· ' + p.empresa;
     document.getElementById('tab-admin-btn').style.display = 'block';
+    document.getElementById('tab-colab-btn').style.display = 'block';
     iniciarListenerEmpresa(p.empresa);
     iniciarListenerUsuarios(p.empresa);
+    iniciarListenerColaboradores(p.empresa);
   } else {
     badge.textContent = p.setor || 'Usuário'; badge.className = 'user-badge';
     empresaTxt.textContent = '· ' + p.empresa;
     iniciarListenerSetor(p.empresa, p.setor);
+    iniciarListenerColaboradores(p.empresa);
   }
 }
 
-// LISTENERS
+// LISTENERS ENTREGAS
 function iniciarListenerSetor(empresa, setor) {
   if (unsubEntregas) unsubEntregas();
   const q = query(collection(db, 'entregas'), where('empresa', '==', empresa), where('setor_registro', '==', setor), orderBy('criadoEm', 'desc'));
-  unsubEntregas = onSnapshot(q, snap => { allDocs = snap.docs.map(d => ({ _id: d.id, ...d.data() })); setStatus(true); renderHistorico(); }, () => setStatus(false));
+  unsubEntregas = onSnapshot(q, snap => { allDocs = snap.docs.map(d => ({ _id: d.id, ...d.data() })); setStatus(true); renderHistorico(); }, err => { if (err.code !== 'permission-denied') setStatus(false); else setStatus(true); });
 }
-
 function iniciarListenerEmpresa(empresa) {
   if (unsubEntregas) unsubEntregas();
   const q = query(collection(db, 'entregas'), where('empresa', '==', empresa), orderBy('criadoEm', 'desc'));
-  unsubEntregas = onSnapshot(q, snap => { allDocs = snap.docs.map(d => ({ _id: d.id, ...d.data() })); setStatus(true); renderHistorico(); }, () => setStatus(false));
+  unsubEntregas = onSnapshot(q, snap => { allDocs = snap.docs.map(d => ({ _id: d.id, ...d.data() })); setStatus(true); renderHistorico(); }, err => { if (err.code !== 'permission-denied') setStatus(false); else setStatus(true); });
 }
-
 function iniciarListenerSuperAdmin() {
   if (unsubEntregas) unsubEntregas();
   const q = query(collection(db, 'entregas'), orderBy('criadoEm', 'desc'));
-  unsubEntregas = onSnapshot(q, snap => { allDocs = snap.docs.map(d => ({ _id: d.id, ...d.data() })); setStatus(true); renderHistorico(); }, () => setStatus(false));
+  unsubEntregas = onSnapshot(q, snap => { allDocs = snap.docs.map(d => ({ _id: d.id, ...d.data() })); setStatus(true); renderHistorico(); }, err => { if (err.code !== 'permission-denied') setStatus(false); else setStatus(true); });
   iniciarListenerUsuariosSuperAdmin();
 }
-
 function iniciarListenerUsuarios(empresa) {
   if (unsubUsuarios) unsubUsuarios();
   const q = query(collection(db, 'usuarios'), where('empresa', '==', empresa));
   unsubUsuarios = onSnapshot(q, snap => { renderUsuarios(snap.docs.map(d => ({ _docId: d.id, ...d.data() }))); });
 }
-
 function iniciarListenerUsuariosSuperAdmin() {
   if (unsubUsuarios) unsubUsuarios();
   unsubUsuarios = onSnapshot(collection(db, 'usuarios'), snap => { renderUsuarios(snap.docs.map(d => ({ _docId: d.id, ...d.data() }))); });
 }
 
-// AUTH ACTIONS
+// LISTENER COLABORADORES
+function iniciarListenerColaboradores(empresa) {
+  if (unsubColaboradores) unsubColaboradores();
+  const q = empresa
+    ? query(collection(db, 'colaboradores'), where('empresa', '==', empresa), orderBy('nome'))
+    : query(collection(db, 'colaboradores'), orderBy('nome'));
+  unsubColaboradores = onSnapshot(q, snap => {
+    allColaboradores = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+    renderColaboradores();
+  });
+}
+
+// AUTH
+function switchAuthTab(tab, el) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('auth-' + tab).classList.add('active');
+  el.classList.add('active');
+}
+window.switchAuthTab = switchAuthTab;
+
 async function fazerLogin() {
   const email = document.getElementById('login-email').value.trim();
   const senha = document.getElementById('login-senha').value;
   if (!email || !senha) { showToast('Preencha email e senha'); return; }
-  try {
-    await signInWithEmailAndPassword(auth, email, senha);
-  } catch(e) {
-    showToast('Email ou senha incorretos');
-  }
+  try { await signInWithEmailAndPassword(auth, email, senha); }
+  catch(e) { showToast('Email ou senha incorretos'); }
 }
 window.fazerLogin = fazerLogin;
 
@@ -423,16 +520,15 @@ async function fazerCadastro() {
   const nome = document.getElementById('cad-nome').value.trim();
   const email = document.getElementById('cad-email').value.trim();
   const senha = document.getElementById('cad-senha').value;
+  const senha2 = document.getElementById('cad-senha2').value;
   const empresa = document.getElementById('cad-empresa').value.trim();
   const setor = document.getElementById('cad-setor').value.trim();
-  if (!nome || !email || !senha || !empresa || !setor) { showToast('Preencha todos os campos'); return; }
+  if (!nome || !email || !senha || !senha2 || !empresa || !setor) { showToast('Preencha todos os campos'); return; }
   if (senha.length < 6) { showToast('Senha deve ter ao menos 6 caracteres'); return; }
+  if (senha !== senha2) { showToast('As senhas não coincidem'); return; }
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, senha);
-    await addDoc(collection(db, 'usuarios'), {
-      uid: cred.user.uid, nome, email, empresa, setor,
-      role: 'usuario', aprovado: false, criadoEm: Date.now()
-    });
+    await addDoc(collection(db, 'usuarios'), { uid: cred.user.uid, nome, email, empresa, setor, role: 'usuario', aprovado: false, criadoEm: Date.now() });
     showToast('Conta criada! Aguarde aprovação do admin.');
   } catch(e) {
     if (e.code === 'auth/email-already-in-use') showToast('Email já cadastrado');
@@ -444,40 +540,27 @@ window.fazerCadastro = fazerCadastro;
 async function esqueceuSenha() {
   const email = document.getElementById('login-email').value.trim();
   if (!email) { showToast('Digite seu email primeiro'); return; }
-  try {
-    await sendPasswordResetEmail(auth, email);
-    showToast('Email de redefinição enviado!');
-  } catch(e) {
-    showToast('Email não encontrado');
-  }
+  try { await sendPasswordResetEmail(auth, email); showToast('Email de redefinição enviado!'); }
+  catch(e) { showToast('Email não encontrado'); }
 }
 window.esqueceuSenha = esqueceuSenha;
 
-async function fazerLogout() {
-  await signOut(auth);
-  showToast('Sessão encerrada');
-}
+async function fazerLogout() { await signOut(auth); showToast('Sessão encerrada'); }
 window.fazerLogout = fazerLogout;
 
 // TABS
-function switchAuthTab(tab, el) {
-  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('auth-' + tab).classList.add('active');
-  el.classList.add('active');
-}
-window.switchAuthTab = switchAuthTab;
-
 function switchTab(tab, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
   el.classList.add('active');
   if (tab === 'historico') renderHistorico();
+  if (tab === 'colaboradores') renderColaboradores();
+  document.getElementById('dest-dropdown').classList.remove('open');
 }
 window.switchTab = switchTab;
 
-// CANVAS
+// CANVAS ASSINATURA
 const canvas = document.getElementById('sig-canvas');
 const ctx = canvas.getContext('2d');
 let drawing = false, hasSig = false;
@@ -504,9 +587,48 @@ function getAssinatura() { return hasSig ? canvas.toDataURL('image/png') : null;
 window.limparAssinatura = limparAssinatura;
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
+document.addEventListener('click', e => { if (!e.target.closest('.dest-wrap')) document.getElementById('dest-dropdown').classList.remove('open'); });
 
 function today() { return new Date().toISOString().slice(0,10); }
 document.getElementById('data').value = today();
+
+// AUTOCOMPLETE DESTINATÁRIO
+function buscarColaborador() {
+  const busca = document.getElementById('destinatario').value.toLowerCase().trim();
+  const dropdown = document.getElementById('dest-dropdown');
+  const empresa = currentProfile?.empresa;
+  const filtrados = allColaboradores.filter(c => {
+    const matchEmpresa = currentProfile?.role === 'superadmin' || c.empresa === empresa;
+    const matchBusca = !busca || c.nome.toLowerCase().includes(busca) || c.setor.toLowerCase().includes(busca);
+    return matchEmpresa && matchBusca;
+  }).slice(0, 8);
+
+  let html = filtrados.map(c => `
+    <div class="dest-item" onclick="selecionarColaborador('${c.nome.replace(/'/g,"\\'")}', '${c.setor.replace(/'/g,"\\'")}')">
+      <div class="dest-item-name">${c.nome}</div>
+      <div class="dest-item-setor">${c.setor}${c.cargo ? ' · ' + c.cargo : ''}</div>
+    </div>`).join('');
+
+  if (busca && !filtrados.find(c => c.nome.toLowerCase() === busca)) {
+    html += `<div class="dest-item dest-novo" onclick="usarNomeDigitado()">+ Usar "${document.getElementById('destinatario').value}" como novo destinatário</div>`;
+  }
+
+  dropdown.innerHTML = html || '<div class="dest-item" style="color:var(--text3)">Nenhum resultado</div>';
+  dropdown.classList.add('open');
+}
+window.buscarColaborador = buscarColaborador;
+
+function selecionarColaborador(nome, setor) {
+  document.getElementById('destinatario').value = nome;
+  document.getElementById('setor-entrega').value = setor;
+  document.getElementById('dest-dropdown').classList.remove('open');
+}
+window.selecionarColaborador = selecionarColaborador;
+
+function usarNomeDigitado() {
+  document.getElementById('dest-dropdown').classList.remove('open');
+}
+window.usarNomeDigitado = usarNomeDigitado;
 
 // REGISTRAR
 async function registrar() {
@@ -532,7 +654,8 @@ async function registrar() {
       usuario_uid: currentProfile.uid,
       criadoEm: Date.now()
     });
-    ['produto','quantidade','destinatario','obs'].forEach(id => document.getElementById(id).value = '');
+    ['produto','quantidade','obs'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('destinatario').value = '';
     document.getElementById('setor-entrega').value = '';
     document.getElementById('data').value = today();
     document.getElementById('tipo').value = 'definitivo';
@@ -572,9 +695,8 @@ document.getElementById('modal-sig').addEventListener('click', function(e) { if 
 
 function exportarBackup() {
   if (!allDocs.length) { showToast('Nenhum registro'); return; }
-  const backup = { versao: 4, exportadoEm: new Date().toISOString(), total: allDocs.length, registros: allDocs };
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' }));
+  a.href = URL.createObjectURL(new Blob([JSON.stringify({ versao: 4, exportadoEm: new Date().toISOString(), total: allDocs.length, registros: allDocs }, null, 2)], { type: 'application/json' }));
   a.download = `entregas_backup_${today()}.json`; a.click();
   showToast('Backup exportado!');
 }
@@ -590,8 +712,7 @@ function renderHistorico() {
   document.getElementById('metrics').innerHTML = `
     <div class="metric"><div class="metric-label">Total</div><div class="metric-value">${total}</div></div>
     <div class="metric"><div class="metric-label">Empréstimos</div><div class="metric-value">${emprestimos}</div></div>
-    <div class="metric"><div class="metric-label">Pendentes</div><div class="metric-value">${pendentes}</div></div>
-  `;
+    <div class="metric"><div class="metric-label">Pendentes</div><div class="metric-value">${pendentes}</div></div>`;
   const filtered = allDocs.filter(e => {
     const texto = [e.produto, e.destinatario, e.setor, e.obs, e.empresa, e.setor_registro, e.usuario_nome].join(' ').toLowerCase();
     const matchBusca = !busca || texto.includes(busca);
@@ -609,72 +730,101 @@ function renderHistorico() {
     ${filtered.map(e => {
       const badgeClass = e.tipo === 'definitivo' ? 'badge-neutro' : e.devolvido ? 'badge-devolvido' : 'badge-pendente';
       const badgeLabel = e.tipo === 'definitivo' ? 'Definitivo' : e.devolvido ? 'Devolvido' : 'Empréstimo';
-      const meta = [
-        'Entregue em ' + fmt(e.data),
-        e.devolvido ? 'Devolvido em ' + fmt(e.dataDevolvido) : null,
-        e.usuario_nome ? 'por ' + e.usuario_nome : null,
-        isSuperAdmin && e.empresa ? e.empresa + (e.setor_registro ? ' / ' + e.setor_registro : '') : (isAdmin && e.setor_registro ? e.setor_registro : null),
-        e.obs || null
-      ].filter(Boolean).join(' · ');
-      return `
-        <div class="item">
-          <div class="item-header">
-            <div>
-              <div class="item-title">${e.produto}${e.quantidade ? ' <span class="item-qty">('+e.quantidade+')</span>' : ''}</div>
-              <div class="item-sub">${e.destinatario}${e.setor ? ' · ' + e.setor : ''}</div>
-            </div>
-            <span class="badge ${badgeClass}">${badgeLabel}</span>
+      const meta = ['Entregue em ' + fmt(e.data), e.devolvido ? 'Devolvido em ' + fmt(e.dataDevolvido) : null, e.usuario_nome ? 'por ' + e.usuario_nome : null, isSuperAdmin && e.empresa ? e.empresa + (e.setor_registro ? ' / ' + e.setor_registro : '') : (isAdmin && e.setor_registro ? e.setor_registro : null), e.obs || null].filter(Boolean).join(' · ');
+      return `<div class="item">
+        <div class="item-header">
+          <div>
+            <div class="item-title">${e.produto}${e.quantidade ? ' <span class="item-qty">('+e.quantidade+')</span>' : ''}</div>
+            <div class="item-sub">${e.destinatario}${e.setor ? ' · ' + e.setor : ''}</div>
           </div>
-          <div class="item-meta">${meta}</div>
-          <div class="actions">
-            ${e.assinatura ? `<button class="btn-sm btn-ghost" onclick="verAssinatura('${e._id}')">Ver assinatura</button>` : `<span style="font-size:12px;color:var(--text3)">Sem assinatura</span>`}
-            ${e.tipo === 'emprestimo' && !e.devolvido ? `<button class="btn-sm btn-devolvido" onclick="marcarDevolvido('${e._id}')">Marcar devolvido</button>` : ''}
-            ${isAdmin ? `<button class="btn-sm btn-danger" onclick="excluir('${e._id}')">Remover</button>` : ''}
-          </div>
-        </div>`;
+          <span class="badge ${badgeClass}">${badgeLabel}</span>
+        </div>
+        <div class="item-meta">${meta}</div>
+        <div class="actions">
+          ${e.assinatura ? `<button class="btn-sm btn-ghost" onclick="verAssinatura('${e._id}')">Ver assinatura</button>` : `<span style="font-size:12px;color:var(--text3)">Sem assinatura</span>`}
+          ${e.tipo === 'emprestimo' && !e.devolvido ? `<button class="btn-sm btn-devolvido" onclick="marcarDevolvido('${e._id}')">Marcar devolvido</button>` : ''}
+          ${isAdmin ? `<button class="btn-sm btn-danger" onclick="excluir('${e._id}')">Remover</button>` : ''}
+        </div>
+      </div>`;
     }).join('')}`;
 }
 window.renderHistorico = renderHistorico;
 
-// ADMIN — USUÁRIOS
+// COLABORADORES
+async function cadastrarColaborador() {
+  const nome = document.getElementById('colab-nome').value.trim();
+  const setor = document.getElementById('colab-setor').value.trim();
+  const cargo = document.getElementById('colab-cargo').value.trim();
+  if (!nome || !setor) { showToast('Preencha nome e setor'); return; }
+  try {
+    await addDoc(collection(db, 'colaboradores'), {
+      nome, setor, cargo,
+      empresa: currentProfile.role === 'superadmin' ? 'Todas' : currentProfile.empresa,
+      criadoEm: Date.now()
+    });
+    document.getElementById('colab-nome').value = '';
+    document.getElementById('colab-setor').value = '';
+    document.getElementById('colab-cargo').value = '';
+    showToast('Colaborador cadastrado!');
+  } catch(e) { showToast('Erro ao cadastrar'); }
+}
+window.cadastrarColaborador = cadastrarColaborador;
+
+async function excluirColaborador(id, nome) {
+  if (!confirm('Remover ' + nome + '?')) return;
+  try { await deleteDoc(doc(db, 'colaboradores', id)); showToast('Colaborador removido'); }
+  catch(e) { showToast('Erro ao remover'); }
+}
+window.excluirColaborador = excluirColaborador;
+
+function renderColaboradores() {
+  const busca = (document.getElementById('busca-colab')?.value || '').toLowerCase();
+  const filtered = allColaboradores.filter(c => !busca || c.nome.toLowerCase().includes(busca) || c.setor.toLowerCase().includes(busca));
+  const lista = document.getElementById('lista-colaboradores');
+  if (!filtered.length) { lista.innerHTML = '<div class="empty">Nenhum colaborador encontrado</div>'; return; }
+  lista.innerHTML = filtered.map(c => `
+    <div class="user-row">
+      <div class="user-info">
+        <div class="user-name">${c.nome}</div>
+        <div class="user-detail">${c.setor}${c.cargo ? ' · ' + c.cargo : ''}${currentProfile?.role === 'superadmin' && c.empresa ? ' · ' + c.empresa : ''}</div>
+      </div>
+      <button class="btn-sm btn-danger" onclick="excluirColaborador('${c._id}', '${c.nome.replace(/'/g,"\\'")}')">Remover</button>
+    </div>`).join('');
+}
+window.renderColaboradores = renderColaboradores;
+
+// ADMIN USUÁRIOS
 function renderUsuarios(usuarios) {
   const pendentes = usuarios.filter(u => !u.aprovado);
   const ativos = usuarios.filter(u => u.aprovado);
-
   const pEl = document.getElementById('usuarios-pendentes');
-  if (!pendentes.length) { pEl.innerHTML = '<div class="empty">Nenhum usuário pendente</div>'; }
-  else {
-    pEl.innerHTML = pendentes.map(u => `
-      <div class="user-row">
-        <div class="user-info">
-          <div class="user-name">${u.nome}</div>
-          <div class="user-detail">${u.email} · ${u.empresa} · ${u.setor}</div>
-        </div>
-        <div style="display:flex;gap:6px;flex-shrink:0">
-          <button class="btn-sm btn-approve" onclick="aprovarUsuario('${u._docId}', '${u.nome}')">Aprovar</button>
-          <button class="btn-sm btn-danger" onclick="recusarUsuario('${u._docId}', '${u.email}')">Recusar</button>
-        </div>
-      </div>`).join('');
-  }
+  pEl.innerHTML = !pendentes.length ? '<div class="empty">Nenhum usuário pendente</div>' :
+    pendentes.map(u => `<div class="user-row">
+      <div class="user-info">
+        <div class="user-name">${u.nome}</div>
+        <div class="user-detail">${u.email} · ${u.empresa} · ${u.setor}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="btn-sm btn-approve" onclick="aprovarUsuario('${u._docId}', '${u.nome}')">Aprovar</button>
+        <button class="btn-sm btn-danger" onclick="recusarUsuario('${u._docId}', '${u.email}')">Recusar</button>
+      </div>
+    </div>`).join('');
 
   const aEl = document.getElementById('usuarios-ativos');
-  if (!ativos.length) { aEl.innerHTML = '<div class="empty">Nenhum usuário ativo</div>'; }
-  else {
-    aEl.innerHTML = ativos.map(u => `
-      <div class="user-row">
-        <div class="user-info">
-          <div class="user-name">${u.nome} <span class="badge ${u.role === 'admin' || u.role === 'superadmin' ? 'badge-pendente-aprov' : 'badge-neutro'}">${u.role === 'admin' ? 'Admin' : u.role === 'superadmin' ? 'Super Admin' : 'Usuário'}</span></div>
-          <div class="user-detail">${u.email} · ${u.empresa} · ${u.setor}</div>
-        </div>
-        <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
-          ${u.role !== 'superadmin' && u.uid !== currentProfile?.uid ? `
-            ${u.role !== 'admin' ? `<button class="btn-sm btn-ghost" onclick="tornarAdmin('${u._docId}', '${u.nome}')">Tornar admin</button>` : `<button class="btn-sm btn-ghost" onclick="removerAdmin('${u._docId}', '${u.nome}')">Remover admin</button>`}
-            <button class="btn-sm btn-danger" onclick="desativarUsuario('${u._docId}', '${u.nome}')">Desativar</button>
-            <button class="btn-sm btn-danger" onclick="excluirUsuario('${u._docId}', '${u.nome}', '${u.email}')">Excluir</button>
-          ` : ''}
-        </div>
-      </div>`).join('');
-  }
+  aEl.innerHTML = !ativos.length ? '<div class="empty">Nenhum usuário ativo</div>' :
+    ativos.map(u => `<div class="user-row">
+      <div class="user-info">
+        <div class="user-name">${u.nome} <span class="badge ${u.role === 'admin' || u.role === 'superadmin' ? 'badge-pendente-aprov' : 'badge-neutro'}">${u.role === 'admin' ? 'Admin' : u.role === 'superadmin' ? 'Super Admin' : 'Usuário'}</span></div>
+        <div class="user-detail">${u.email} · ${u.empresa} · ${u.setor}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+        ${u.role !== 'superadmin' && u.uid !== currentProfile?.uid ? `
+          ${u.role !== 'admin' ? `<button class="btn-sm btn-ghost" onclick="tornarAdmin('${u._docId}', '${u.nome}')">Tornar admin</button>` : `<button class="btn-sm btn-ghost" onclick="removerAdmin('${u._docId}', '${u.nome}')">Remover admin</button>`}
+          <button class="btn-sm btn-danger" onclick="desativarUsuario('${u._docId}', '${u.nome}')">Desativar</button>
+          <button class="btn-sm btn-danger" onclick="excluirUsuario('${u._docId}', '${u.nome}', '${u.email}')">Excluir</button>
+        ` : ''}
+      </div>
+    </div>`).join('');
 }
 
 async function aprovarUsuario(docId, nome) {
@@ -691,14 +841,14 @@ async function recusarUsuario(docId, email) {
 window.recusarUsuario = recusarUsuario;
 
 async function desativarUsuario(docId, nome) {
-  if (!confirm('Desativar ' + nome + '? Ele não conseguirá mais acessar o sistema.')) return;
+  if (!confirm('Desativar ' + nome + '?')) return;
   try { await updateDoc(doc(db, 'usuarios', docId), { aprovado: false }); showToast(nome + ' desativado'); }
   catch(e) { showToast('Erro ao desativar'); }
 }
 window.desativarUsuario = desativarUsuario;
 
 async function excluirUsuario(docId, nome, email) {
-  if (!confirm('Excluir permanentemente o usuário ' + nome + ' (' + email + ')?\nOs registros de entrega dele serão mantidos.')) return;
+  if (!confirm('Excluir permanentemente ' + nome + ' (' + email + ')?')) return;
   try { await deleteDoc(doc(db, 'usuarios', docId)); showToast('Usuário ' + nome + ' excluído'); }
   catch(e) { showToast('Erro ao excluir'); }
 }
