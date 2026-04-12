@@ -91,7 +91,7 @@ textarea{resize:vertical;min-height:60px}
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
 @media(max-width:560px){.charts-grid{grid-template-columns:1fr}}
 .chart-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:1rem;overflow:hidden}
-.chart-card canvas{max-height:200px!important;height:200px!important}
+.chart-card-inner{position:relative;height:200px;width:100%}
 .chart-title{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.04em}
 
 /* ITEMS */
@@ -225,7 +225,13 @@ textarea{resize:vertical;min-height:60px}
         <div class="pass-wrap"><input type="password" id="cad-senha2" placeholder="Digite a senha novamente"/>
         <button class="pass-toggle" onclick="toggleSenha('cad-senha2',this)" type="button">👁</button></div>
       </div>
-      <div class="field-full"><label>Empresa</label><input type="text" id="cad-empresa" placeholder="Nome da sua empresa"/></div>
+      <div class="field-full"><label>Empresa</label>
+        <select id="cad-empresa">
+          <option value="">Selecione a empresa</option>
+          <option value="Colégio Souza Duarte">Colégio Souza Duarte</option>
+          <option value="Semente Creche Escola">Semente Creche Escola</option>
+        </select>
+      </div>
       <div class="field-full"><label>Setor</label><input type="text" id="cad-setor" placeholder="Ex: Coordenação, TI, Financeiro"/></div>
       <button class="btn btn-primary btn-block" onclick="fazerCadastro()">Criar conta</button>
     </div>
@@ -268,8 +274,8 @@ textarea{resize:vertical;min-height:60px}
     <div id="tab-dashboard" class="tab-panel active">
       <div class="metrics" id="dash-metrics"></div>
       <div class="charts-grid">
-        <div class="chart-card"><div class="chart-title">Entregas por período</div><canvas id="chart-periodo" style="height:180px;max-height:180px"></canvas></div>
-        <div class="chart-card"><div class="chart-title">Top setores</div><canvas id="chart-setores" style="height:180px;max-height:180px"></canvas></div>
+        <div class="chart-card"><div class="chart-title">Entregas por período</div><div class="chart-card-inner"><canvas id="chart-periodo"></canvas></div></div>
+        <div class="chart-card"><div class="chart-title">Top setores</div><div class="chart-card-inner"><canvas id="chart-setores"></canvas></div></div>
       </div>
       <div class="card">
         <div class="section-title">Empréstimos pendentes de devolução</div>
@@ -697,7 +703,7 @@ async function fazerCadastro() {
   const email=document.getElementById('cad-email').value.trim();
   const senha=document.getElementById('cad-senha').value;
   const senha2=document.getElementById('cad-senha2').value;
-  const empresa=document.getElementById('cad-empresa').value.trim();
+  const empresa=document.getElementById('cad-empresa').value;
   const setor=document.getElementById('cad-setor').value.trim();
   if (!nome||!email||!senha||!senha2||!empresa||!setor){showToast('Preencha todos os campos');return;}
   if (senha.length<6){showToast('Senha deve ter ao menos 6 caracteres');return;}
@@ -1092,7 +1098,7 @@ function renderDashboard(){
   }
   if(chartPeriodo)chartPeriodo.destroy();
   const ctxP=document.getElementById('chart-periodo').getContext('2d');
-  chartPeriodo=new Chart(ctxP,{type:'bar',data:{labels:dias,datasets:[{data:counts,backgroundColor:'rgba(29,158,117,0.7)',borderRadius:4,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{ticks:{font:{size:10}}}},responsive:true,maintainAspectRatio:true,aspectRatio:2}});
+  chartPeriodo=new Chart(ctxP,{type:'bar',data:{labels:dias,datasets:[{data:counts,backgroundColor:'rgba(29,158,117,0.7)',borderRadius:4,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{ticks:{font:{size:10}}}},responsive:true,maintainAspectRatio:false}});
 
   // Gráfico por setores
   const setoresMap={};
@@ -1100,7 +1106,7 @@ function renderDashboard(){
   const topSetores=Object.entries(setoresMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
   if(chartSetores)chartSetores.destroy();
   const ctxS=document.getElementById('chart-setores').getContext('2d');
-  chartSetores=new Chart(ctxS,{type:'doughnut',data:{labels:topSetores.map(s=>s[0]),datasets:[{data:topSetores.map(s=>s[1]),backgroundColor:['#1D9E75','#5DCAA5','#9FE1CB','#185fa5','#854f0b']}]},options:{plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}}},responsive:true,maintainAspectRatio:true,aspectRatio:2}});
+  chartSetores=new Chart(ctxS,{type:'doughnut',data:{labels:topSetores.map(s=>s[0]),datasets:[{data:topSetores.map(s=>s[1]),backgroundColor:['#1D9E75','#5DCAA5','#9FE1CB','#185fa5','#854f0b']}]},options:{plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}}},responsive:true,maintainAspectRatio:false}});
 
   // Pendentes
   const pend=allDocs.filter(e=>e.tipo==='emprestimo'&&!e.devolvido).slice(0,5);
@@ -1131,7 +1137,7 @@ function renderHistorico(){
     return matchB&&matchF&&matchDI&&matchDF;
   });
   const isSA=currentProfile?.role==='superadmin';
-  const isAdm=currentProfile?.role==='admin'||isSA;
+  const isAdm=currentProfile?.role==='admin'||currentProfile?.role==='superadmin';
   const lista=document.getElementById('lista');
   if(!filtered.length){lista.innerHTML='<div class="empty">Nenhum registro encontrado</div>';return;}
   lista.innerHTML=`
@@ -1156,7 +1162,7 @@ function renderHistorico(){
         <div class="actions">
           ${e.assinatura?`<button class="btn-sm btn-ghost" onclick="verAssinatura('${e._id}')">Ver assinatura</button>`:`<span style="font-size:12px;color:var(--text3)">Sem assinatura</span>`}
           ${e.tipo==='emprestimo'&&!e.devolvido?`<button class="btn-sm btn-devolvido" onclick="marcarDevolvido('${e._id}')">Marcar devolvido</button>`:''}
-          ${isAdm?`<button class="btn-sm btn-danger" onclick="excluir('${e._id}')">Remover</button>`:''}
+          ${isAdm?`<button class="btn-sm btn-ghost" onclick="abrirEdicao('${e._id}')" style="margin-right:4px">Editar</button><button class="btn-sm btn-danger" onclick="excluir('${e._id}')">Remover</button>`:''}
         </div>
       </div>`;
     }).join('')}`;
