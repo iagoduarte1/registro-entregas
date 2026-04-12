@@ -90,7 +90,8 @@ textarea{resize:vertical;min-height:60px}
 /* CHARTS */
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem}
 @media(max-width:560px){.charts-grid{grid-template-columns:1fr}}
-.chart-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:1rem}
+.chart-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:1rem;overflow:hidden}
+.chart-card canvas{max-height:200px!important;height:200px!important}
 .chart-title{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.04em}
 
 /* ITEMS */
@@ -267,8 +268,8 @@ textarea{resize:vertical;min-height:60px}
     <div id="tab-dashboard" class="tab-panel active">
       <div class="metrics" id="dash-metrics"></div>
       <div class="charts-grid">
-        <div class="chart-card"><div class="chart-title">Entregas por período</div><canvas id="chart-periodo" height="180"></canvas></div>
-        <div class="chart-card"><div class="chart-title">Top setores</div><canvas id="chart-setores" height="180"></canvas></div>
+        <div class="chart-card"><div class="chart-title">Entregas por período</div><canvas id="chart-periodo" style="height:180px;max-height:180px"></canvas></div>
+        <div class="chart-card"><div class="chart-title">Top setores</div><canvas id="chart-setores" style="height:180px;max-height:180px"></canvas></div>
       </div>
       <div class="card">
         <div class="section-title">Empréstimos pendentes de devolução</div>
@@ -978,7 +979,7 @@ function renderDashboard(){
   }
   if(chartPeriodo)chartPeriodo.destroy();
   const ctxP=document.getElementById('chart-periodo').getContext('2d');
-  chartPeriodo=new Chart(ctxP,{type:'bar',data:{labels:dias,datasets:[{data:counts,backgroundColor:'rgba(29,158,117,0.7)',borderRadius:4,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{ticks:{font:{size:10}}}},responsive:true,maintainAspectRatio:false}});
+  chartPeriodo=new Chart(ctxP,{type:'bar',data:{labels:dias,datasets:[{data:counts,backgroundColor:'rgba(29,158,117,0.7)',borderRadius:4,borderSkipped:false}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}},x:{ticks:{font:{size:10}}}},responsive:true,maintainAspectRatio:true,aspectRatio:2}});
 
   // Gráfico por setores
   const setoresMap={};
@@ -986,7 +987,7 @@ function renderDashboard(){
   const topSetores=Object.entries(setoresMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
   if(chartSetores)chartSetores.destroy();
   const ctxS=document.getElementById('chart-setores').getContext('2d');
-  chartSetores=new Chart(ctxS,{type:'doughnut',data:{labels:topSetores.map(s=>s[0]),datasets:[{data:topSetores.map(s=>s[1]),backgroundColor:['#1D9E75','#5DCAA5','#9FE1CB','#185fa5','#854f0b']}]},options:{plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}}},responsive:true,maintainAspectRatio:false}});
+  chartSetores=new Chart(ctxS,{type:'doughnut',data:{labels:topSetores.map(s=>s[0]),datasets:[{data:topSetores.map(s=>s[1]),backgroundColor:['#1D9E75','#5DCAA5','#9FE1CB','#185fa5','#854f0b']}]},options:{plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12}}},responsive:true,maintainAspectRatio:true,aspectRatio:2}});
 
   // Pendentes
   const pend=allDocs.filter(e=>e.tipo==='emprestimo'&&!e.devolvido).slice(0,5);
